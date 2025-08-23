@@ -1,53 +1,153 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PerlinNoiseGenerator : MonoBehaviour
 {
-    // Offsets para aleatoriedad
-    private float offsetX;
-    private float offsetY;
+    [SerializeField] private int width = 256;
+    [SerializeField] private int height = 256;
+    [SerializeField] private int seed = 0;
+    [SerializeField] private float scale = 0.01f;
+    [SerializeField] private int octaves = 4;
+    [SerializeField] private float persistence = 0.5f;
+    [SerializeField] private float lacunarity = 2f;
+    [SerializeField] private Vector2 offset = Vector2.zero;
+    [SerializeField] private Color baseColor = Color.red;
+    [SerializeField] private Color targetColor = Color.yellow;
+    [SerializeField, Range(0f, 1f)] private float brightness = 0.2f;
+    public Texture2D noiseTexture;
+    private SpriteRenderer spriteRenderer;
+    private int[] permutation;
 
-    // Start is called before the first frame update
     void Start()
     {
-        
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        InitializePermutationTable();
+        GenerateTexture();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // Nuevos offsets aleatorios cada vez que se genera una textura
-            offsetX = Random.Range(0f, 1000f);
-            offsetY = Random.Range(0f, 1000f);
-
-            Texture2D texture = GenerateClassicPerlinTexture(256, 256, 10f, offsetX, offsetY);
-            GetComponent<SpriteRenderer>().sprite = Sprite.Create(
-                texture,
-                new Rect(0, 0, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f)
-            );
-            Debug.Log("Generated random Perlin Noise Texture");
+            InitializePermutationTable();
+            GenerateTexture();
         }
     }
 
-    Texture2D GenerateClassicPerlinTexture(int width, int height, float scale, float offsetX, float offsetY)
+    // Inicializa la tabla de permutación basada en la semilla
+    private void InitializePermutationTable()
     {
-        Texture2D texture = new Texture2D(width, height);
-        for (int y = 0; y < height; y++)
+        Random.InitState(seed);
+        permutation = new int[512];
+        int[] basePerm = new int[256];
+
+        // Llena la tabla base con valores 0-255
+        for (int i = 0; i < 256; i++)
+            basePerm[i] = i;
+
+        // Mezcla los valores (Fisher-Yates shuffle)
+        for (int i = 255; i > 0; i--)
         {
-            for (int x = 0; x < width; x++)
+            int j = Random.Range(0, i + 1);
+            (basePerm[i], basePerm[j]) = (basePerm[j], basePerm[i]);
+        }
+
+        // Duplica la tabla a 512 para evitar desbordes
+        for (int i = 0; i < 512; i++)
+            permutation[i] = basePerm[i % 256];
+
+        Debug.Log("Permutation table initialized with seed: " + seed);
+    }
+
+    public void GenerateTexture()
+    {
+        noiseTexture = new Texture2D(width, height);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
             {
-                float xCoord = (float)x / width * scale + offsetX;
-                float yCoord = (float)y / height * scale + offsetY;
-                float sample = Mathf.PerlinNoise(xCoord, yCoord);
-                texture.SetPixel(x, y, new Color(sample, sample, sample));
+                float amplitude = 1f;
+                float frequency = 1f;
+                float noiseValue = 0f;
+                float maxPossible = 0f;
+
+                for (int o = 0; o < octaves; o++)
+                {
+                    float sampleX = (x + offset.x) * scale * frequency;
+                    float sampleY = (y + offset.y) * scale * frequency;
+
+                    float perlinValue = Perlin(sampleX, sampleY) * 2 - 1;
+                    noiseValue += perlinValue * amplitude;
+                    maxPossible += amplitude;
+
+                    amplitude *= persistence;
+                    frequency *= lacunarity;
+                }
+
+                float normalizedNoise = (noiseValue + 1f) * 0.5f;
+                normalizedNoise = Mathf.Clamp01(normalizedNoise + brightness);
+                Color color = Color.Lerp(baseColor, targetColor, normalizedNoise);
+                noiseTexture.SetPixel(x, y, color);
             }
         }
-        texture.Apply();
-        return texture;
+
+        noiseTexture.Apply();
+        spriteRenderer.sprite = Sprite.Create(noiseTexture, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
     }
 
+    private float Perlin(float x, float y)
+    {
+        int xi = (int)x & 255;
+        int yi = (int)y & 255;
+        float xf = x - (int)x;
+        float yf = y - (int)y;
+
+        int g00 = permutation[(permutation[xi] + yi) & 255];
+        int g10 = permutation[(permutation[xi + 1] + yi) & 255];
+        int g01 = permutation[(permutation[xi] + yi + 1) & 255];
+        int g11 = permutation[(permutation[xi + 1] + yi + 1) & 255];
+
+        Vector2[] dists = new Vector2[4];
+        dists[0] = new Vector2(xf, yf);
+        dists[1] = new Vector2(xf - 1, yf);
+        dists[2] = new Vector2(xf, yf - 1);
+        dists[3] = new Vector2(xf - 1, yf - 1);
+
+        float[] dots = new float[4];
+        for (int i = 0; i < 4; i++)
+        {
+            Vector2 grad = GetGradientVector(permutation[(permutation[xi + (i % 2)] + yi + (i / 2)) & 255]);
+            dots[i] = Vector2.Dot(dists[i], grad);
+        }
+
+        float u = Fade(xf);
+        float v = Fade(yf);
+        float a = Lerp(dots[0], dots[1], u);
+        float b = Lerp(dots[2], dots[3], u);
+        return Lerp(a, b, v);
+    }
+
+    private Vector2 GetGradientVector(int hash)
+    {
+        int h = hash % 12;
+        switch (h)
+        {
+            case 0: return new Vector2(1, 0);
+            case 1: return new Vector2(-1, 0);
+            case 2: return new Vector2(0, 1);
+            case 3: return new Vector2(0, -1);
+            case 4: return new Vector2(1, 1).normalized;
+            case 5: return new Vector2(-1, 1).normalized;
+            case 6: return new Vector2(1, -1).normalized;
+            case 7: return new Vector2(-1, -1).normalized;
+            case 8: return new Vector2(0.707f, 0.707f);
+            case 9: return new Vector2(-0.707f, 0.707f);
+            case 10: return new Vector2(0.707f, -0.707f);
+            case 11: return new Vector2(-0.707f, -0.707f);
+            default: return Vector2.zero;
+        }
+    }
+
+    private float Fade(float t) => t * t * t * (t * (t * 6 - 15) + 10);
+    private float Lerp(float a, float b, float t) => a + t * (b - a);
 }
