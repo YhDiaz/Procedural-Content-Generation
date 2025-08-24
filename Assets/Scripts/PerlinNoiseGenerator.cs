@@ -5,32 +5,38 @@ public class PerlinNoiseGenerator : MonoBehaviour
     [SerializeField] private int width = 256;
     [SerializeField] private int height = 256;
     [SerializeField] private int seed = 0;
-    [SerializeField] private float scale = 0.01f;
-    [SerializeField] private int octaves = 4;
-    [SerializeField] private float persistence = 0.5f;
-    [SerializeField] private float lacunarity = 2f;
+    [SerializeField, Range(0.001f, 0.1f)] private float scale = 0.01f;
+    [SerializeField, Range(1, 8)] private int octaves = 4;
+    [SerializeField, Range(0.01f, 0.99f)] private float persistence = 0.5f;
+    [SerializeField, Range(0f, 10f)] private float lacunarity = 2f;
+    [SerializeField, Range(0f, 1f)] private float brightness = 0.2f;
     [SerializeField] private Vector2 offset = Vector2.zero;
     [SerializeField] private Color baseColor = Color.red;
     [SerializeField] private Color targetColor = Color.yellow;
-    [SerializeField, Range(0f, 1f)] private float brightness = 0.2f;
     public Texture2D noiseTexture;
     private SpriteRenderer spriteRenderer;
     private int[] permutation;
+    private int lastSeed = -1;
+
+    private void OnValidate()
+    {
+        if (!Application.isPlaying)
+            return;
+
+        if (lastSeed != seed)
+        {
+            InitializePermutationTable();
+            lastSeed = seed;
+        }
+
+        GenerateTexture();
+    }
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         InitializePermutationTable();
         GenerateTexture();
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            InitializePermutationTable();
-            GenerateTexture();
-        }
     }
 
     // Inicializa la tabla de permutación basada en la semilla

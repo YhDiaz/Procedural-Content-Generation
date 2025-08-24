@@ -299,15 +299,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 256
   height: 256
-  seed: 0
+  seed: 1
   scale: 0.01
-  octaves: 4
+  octaves: 1
   persistence: 0.5
   lacunarity: 2
+  brightness: 0.2
   offset: {x: 0, y: 0}
   baseColor: {r: 1, g: 0, b: 0, a: 1}
   targetColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  brightness: 0.2
   noiseTexture: {fileID: 0}
 --- !u!4 &1907509510
 Transform:
