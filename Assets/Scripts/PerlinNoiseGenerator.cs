@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class PerlinNoiseGenerator : MonoBehaviour
 {
-    [SerializeField] private int width = 256;
-    [SerializeField] private int height = 256;
     [SerializeField] private int seed = 0;
     [SerializeField, Range(0.001f, 0.1f)] private float scale = 0.01f;
     [SerializeField, Range(1, 8)] private int octaves = 4;
@@ -13,7 +11,12 @@ public class PerlinNoiseGenerator : MonoBehaviour
     [SerializeField] private Vector2 offset = Vector2.zero;
     [SerializeField] private Color baseColor = Color.red;
     [SerializeField] private Color targetColor = Color.yellow;
+    [SerializeField] private string textureName;
+    [SerializeField] private bool executeOnStart = true;
+
     public Texture2D noiseTexture;
+    public int width = 256;
+    public int height = 256;
     private SpriteRenderer spriteRenderer;
     private int[] permutation;
     private int lastSeed = -1;
@@ -32,7 +35,34 @@ public class PerlinNoiseGenerator : MonoBehaviour
         GenerateTexture();
     }
 
-    void Start()
+    private void Start()
+    {
+        if (executeOnStart)
+            CreatePerlinNoise();
+    }
+
+    [ContextMenu("Save Texture")]
+    public void SaveTexture()
+    {
+        if (noiseTexture == null)
+        {
+            Debug.LogWarning("No texture to save. Generate the texture first.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(textureName))
+        {
+            Debug.LogWarning("Please provide a valid texture name.");
+            return;
+        }
+
+        byte[] bytes = noiseTexture.EncodeToPNG();
+        string filePath = Application.dataPath + "/Art/Textures/" + textureName + ".png";
+        System.IO.File.WriteAllBytes(filePath, bytes);
+        Debug.Log("Texture saved to: " + filePath);
+    }
+
+    public void CreatePerlinNoise()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         InitializePermutationTable();
@@ -66,6 +96,7 @@ public class PerlinNoiseGenerator : MonoBehaviour
 
     public void GenerateTexture()
     {
+        Debug.Log($"width: {width}, height: {height}");
         noiseTexture = new Texture2D(width, height);
 
         for (int x = 0; x < width; x++)

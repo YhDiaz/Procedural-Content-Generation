@@ -8,6 +8,7 @@ public class BinarySpacePartitioning : MonoBehaviour
     [SerializeField] private Vector2 rootTopLeftCorner = new(0f, 50f);
     [SerializeField] private Vector2 rootBottomRightCorner = new(50f, 0f);
     [SerializeField] private GameObject roomPrefab;
+    [SerializeField] private GameObject corridorPrefab;
 
     private void Start()
         => InitializeTree();
@@ -111,8 +112,8 @@ public class BinarySpacePartitioning : MonoBehaviour
         Vector2 roomTopLeftCorner = new(Random.Range(node.topLeftCorner.x + padding, node.center.x), Random.Range(node.center.y, node.topLeftCorner.y - padding));
         Vector2 roomBottomRightCorner = new(Random.Range(roomTopLeftCorner.x + minimumDistanceBetweenPoints, node.bottomRightCorner.x - padding), Random.Range(node.bottomRightCorner.y + padding, roomTopLeftCorner.y - minimumDistanceBetweenPoints));
 
-        float roomWidth = roomBottomRightCorner.x - roomTopLeftCorner.x;
-        float roomHeight = roomTopLeftCorner.y - roomBottomRightCorner.y;
+        float roomWidth = Mathf.Abs(roomBottomRightCorner.x - roomTopLeftCorner.x);
+        float roomHeight = Mathf.Abs(roomTopLeftCorner.y - roomBottomRightCorner.y);
 
         // Room relative center.
         //Vector2 roomCenter = new(roomWidth / 2f, roomHeight / 2f);
@@ -120,18 +121,22 @@ public class BinarySpacePartitioning : MonoBehaviour
         //GameObject room = Instantiate(roomPrefab, roomSpawnPoint, Quaternion.identity, gameObject.transform);
 
         GameObject room = Instantiate(roomPrefab, node.center, Quaternion.identity, gameObject.transform);
-        room.transform.localScale = new Vector2(roomWidth, roomHeight);
+        //room.transform.localScale = new Vector2(roomWidth, roomHeight);
+        PerlinNoiseGenerator perlinNoise = room.GetComponent<PerlinNoiseGenerator>();
+        perlinNoise.width = 128 * (int)roomWidth;
+        perlinNoise.height = 128 * (int)roomHeight;
+        perlinNoise.CreatePerlinNoise();
     }
 
     private void ViewPartitions(BinarySpacePartitioningNode node, int depth)
     {
-        GameObject partLeft = Instantiate(roomPrefab, node.left.center, Quaternion.identity, gameObject.transform);
+        GameObject partLeft = Instantiate(corridorPrefab, node.left.center, Quaternion.identity, gameObject.transform);
         partLeft.transform.localScale = new Vector2(node.left.width, node.left.height);
         partLeft.transform.position = node.left.center;
         partLeft.GetComponent<SpriteRenderer>().color = new(1f, 0f, 0f, .3f);
         partLeft.GetComponent<SpriteRenderer>().sortingOrder = -10;
         partLeft.name = "Left " + depth;
-        GameObject partRight = Instantiate(roomPrefab, node.right.center, Quaternion.identity, gameObject.transform);
+        GameObject partRight = Instantiate(corridorPrefab, node.right.center, Quaternion.identity, gameObject.transform);
         partRight.transform.localScale = new Vector2(node.right.width, node.right.height);
         partRight.transform.position = node.right.center;
         partRight.GetComponent<SpriteRenderer>().color = new(0f, 0f, 1f, .3f);
@@ -158,7 +163,7 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SpawnHorizontalCorridor(BinarySpacePartitioningNode node)
     {
-        GameObject corridor = Instantiate(roomPrefab, node.left.center, Quaternion.identity, gameObject.transform);
+        GameObject corridor = Instantiate(corridorPrefab, node.left.center, Quaternion.identity, gameObject.transform);
         float corridorWidth = node.right.center.x - node.left.center.x;
         corridor.transform.position = new Vector2(node.left.center.x + corridorWidth / 2f, node.left.center.y);
         corridor.transform.localScale = new Vector2(corridorWidth, 1f);
@@ -166,7 +171,7 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SpawnVerticalCorridor(BinarySpacePartitioningNode node)
     {
-        GameObject corridor = Instantiate(roomPrefab, node.left.center, Quaternion.identity, gameObject.transform);
+        GameObject corridor = Instantiate(corridorPrefab, node.left.center, Quaternion.identity, gameObject.transform);
         float corridorHeight = node.left.center.y - node.right.center.y;
         corridor.transform.position = new Vector2(node.left.center.x, node.left.center.y - corridorHeight / 2f);
         corridor.transform.localScale = new Vector2(1f, corridorHeight);
