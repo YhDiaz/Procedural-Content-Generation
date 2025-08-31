@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class B_L_System : MonoBehaviour
@@ -8,13 +9,16 @@ public class B_L_System : MonoBehaviour
     [SerializeField, Range(1, 7)] private int iterations = 4;
     [SerializeField, Range(0, 360)] private float rotAngle = 20f;
     [SerializeField, Range(.01f, 5)] private float lineLength = 1f;
-    [SerializeField] private string rule = "FF+[+F-F-F]-[-F+F+F]";
+    //[SerializeField] private List<char> alphabet = new List<char> { 'F', '+', '-', '[', ']' };
+    [SerializeField] private string axiom = "F";
+    [SerializeField] private List<char> LHS = new List<char>() { 'F', 'G' };
+    [SerializeField] private List<string> RHS = new List<string>() { "F-G+F+G-F", "GG" };
 
     Stack<(LineRenderer, Quaternion)> stack = new Stack<(LineRenderer, Quaternion)>();
     LineRenderer currentLine;
     Quaternion currentRotation;
     Vector3 currentPosition;
-    string currentString = "F";
+    string currentString;
 
     void Update()
     {
@@ -33,20 +37,19 @@ public class B_L_System : MonoBehaviour
 
     private void GenerateLSystem()
     {
-        currentString = "F";
+        currentString = axiom;
         for (int i = 0; i < iterations; i++)
         {
             string newString = "";
             foreach (char c in currentString)
             {
-                if (c == 'F')
+                if (LHS.Contains(c))
                 {
-                    newString += rule;
+                    int index = LHS.IndexOf(c);
+                    newString += RHS[index];
                 }
                 else
-                {
                     newString += c.ToString();
-                }
             }
             currentString = newString;
         }
@@ -66,12 +69,6 @@ public class B_L_System : MonoBehaviour
         {
             switch (c)
             {
-                case 'F':
-                    Vector3 startPosition = currentPosition;
-                    currentPosition += currentRotation * Vector3.up * lineLength;
-                    currentLine.positionCount += 1;
-                    currentLine.SetPosition(currentLine.positionCount - 1, currentPosition);
-                    break;
                 case '+':
                     currentRotation *= Quaternion.Euler(0, 0, rotAngle);
                     break;
@@ -96,7 +93,15 @@ public class B_L_System : MonoBehaviour
                     }
                     break;
                 default:
-                    Debug.LogWarning($"Unrecognized character '{c}' in L-system string.");
+                    if (LHS.Contains(c))
+                    {
+                        Vector3 startPosition = currentPosition;
+                        currentPosition += currentRotation * Vector3.up * lineLength;
+                        currentLine.positionCount += 1;
+                        currentLine.SetPosition(currentLine.positionCount - 1, currentPosition);
+                    }
+                    else
+                        Debug.LogWarning($"Unrecognized character '{c}' in L-system string.");
                     continue;
             }
         }

@@ -261,9 +261,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   linePrefab: {fileID: 1655489067337078071, guid: fa44f53f2bb09ff40b14d4b068df2534, type: 3}
   iterations: 4
-  rotAngle: 20
+  rotAngle: 60
   lineLength: 1
-  rule: FF+[+F-F-F]-[-F+F+F]
+  axiom: A
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
