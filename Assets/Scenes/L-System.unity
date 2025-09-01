@@ -260,10 +260,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   linePrefab: {fileID: 1655489067337078071, guid: fa44f53f2bb09ff40b14d4b068df2534, type: 3}
-  iterations: 4
-  rotAngle: 60
+  iterations: 3
+  rotAngle: 30
   lineLength: 1
-  axiom: A
+  axiom: F
+  LHS: 4600
+  RHS:
+  - F[-F+[&>[F+F]&F]<^F]F[^+F&-F]
+  nonDrawers: 580059005a00
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

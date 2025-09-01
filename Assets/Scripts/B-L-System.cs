@@ -10,9 +10,12 @@ public class B_L_System : MonoBehaviour
     [SerializeField, Range(0, 360)] private float rotAngle = 20f;
     [SerializeField, Range(.01f, 5)] private float lineLength = 1f;
     //[SerializeField] private List<char> alphabet = new List<char> { 'F', '+', '-', '[', ']' };
-    [SerializeField] private string axiom = "F";
-    [SerializeField] private List<char> LHS = new List<char>() { 'F', 'G' };
-    [SerializeField] private List<string> RHS = new List<string>() { "F-G+F+G-F", "GG" };
+    [SerializeField] private string axiom = "X";
+    [SerializeField] private List<char> LHS = new List<char>() { 'X' };
+    [SerializeField]
+    private List<string> RHS = new List<string>() { "^<XF^<XFX-F^>>XFX&F+>>XFX-F>X->" };
+    [SerializeField] private List<char> nonDrawers = new List<char>() { 'X' };
+
 
     Stack<(LineRenderer, Quaternion)> stack = new Stack<(LineRenderer, Quaternion)>();
     LineRenderer currentLine;
@@ -75,6 +78,18 @@ public class B_L_System : MonoBehaviour
                 case '-':
                     currentRotation *= Quaternion.Euler(0, 0, -rotAngle);
                     break;
+                case '&':
+                    currentRotation *= Quaternion.Euler(rotAngle, 0, 0);
+                    break;
+                case '^':
+                    currentRotation *= Quaternion.Euler(-rotAngle, 0, 0);
+                    break;
+                case '>':
+                    currentRotation *= Quaternion.Euler(0, rotAngle, 0);
+                    break;
+                case '<':
+                    currentRotation *= Quaternion.Euler(0, -rotAngle, 0);
+                    break;
                 case '[':
                     stack.Push((currentLine, currentRotation));
                     currentLine = Instantiate(linePrefab, currentPosition, Quaternion.identity, transform);
@@ -93,7 +108,7 @@ public class B_L_System : MonoBehaviour
                     }
                     break;
                 default:
-                    if (LHS.Contains(c))
+                    if (!nonDrawers.Contains(c))
                     {
                         Vector3 startPosition = currentPosition;
                         currentPosition += currentRotation * Vector3.up * lineLength;
