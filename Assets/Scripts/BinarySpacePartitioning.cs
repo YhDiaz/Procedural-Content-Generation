@@ -10,6 +10,8 @@ public class BinarySpacePartitioning : MonoBehaviour
     [SerializeField] private GameObject roomPrefab;
     [SerializeField] private GameObject corridorPrefab;
 
+    private int splitVerticallyDefault;
+
     private void Start()
         => InitializeTree();
 
@@ -18,6 +20,8 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void InitializeTree()
     {
+        Random.InitState((int)System.DateTime.Now.Ticks);
+        splitVerticallyDefault = Random.Range(0, 2);
         BinarySpacePartitioningNode root = new(rootTopLeftCorner, rootBottomRightCorner);
         root.center = new((root.topLeftCorner.x + root.bottomRightCorner.x) / 2f, (root.topLeftCorner.y + root.bottomRightCorner.y) / 2f);
         SubdivideNode(root, 0);
@@ -62,9 +66,9 @@ public class BinarySpacePartitioning : MonoBehaviour
     private void SplitNode(BinarySpacePartitioningNode node, int depth)
     {
         int currentMinimumSize = minimumRoomSize * (maximumDepth - depth);
-        bool splitVertically = Random.value > 0.5f;
+        int splitVertically = depth + splitVerticallyDefault % 2;
 
-        if (splitVertically)
+        if (splitVertically == 1)
             SplitNodeVertically(node, currentMinimumSize);
         else
             SplitNodeHorizontally(node, currentMinimumSize);
@@ -79,9 +83,6 @@ public class BinarySpacePartitioning : MonoBehaviour
 
         left.center = new((left.topLeftCorner.x + left.bottomRightCorner.x) / 2f, (left.topLeftCorner.y + left.bottomRightCorner.y) / 2f);
         right.center = new((right.topLeftCorner.x + right.bottomRightCorner.x) / 2f, (right.topLeftCorner.y + right.bottomRightCorner.y) / 2f);
-
-        //left.origin = new(node.topLeft.x + (divisionPoint - node.topLeft.x) / 2f, node.bottomRight.y + (node.topLeft.y - node.bottomRight.y) / 2f);
-        //right.origin = new(divisionPoint + (node.bottomRight.x - divisionPoint) / 2f, node.bottomRight.y + (node.topLeft.y - node.bottomRight.y) / 2f);
 
         node.left = left;
         node.right = right;
@@ -121,11 +122,11 @@ public class BinarySpacePartitioning : MonoBehaviour
         //GameObject room = Instantiate(roomPrefab, roomSpawnPoint, Quaternion.identity, gameObject.transform);
 
         GameObject room = Instantiate(roomPrefab, node.center, Quaternion.identity, gameObject.transform);
-        //room.transform.localScale = new Vector2(roomWidth, roomHeight);
-        PerlinNoiseGenerator perlinNoise = room.GetComponent<PerlinNoiseGenerator>();
-        perlinNoise.width = 128 * (int)roomWidth;
-        perlinNoise.height = 128 * (int)roomHeight;
-        perlinNoise.CreatePerlinNoise();
+        room.transform.localScale = new Vector2(roomWidth, roomHeight);
+        //PerlinNoiseGenerator perlinNoise = room.GetComponent<PerlinNoiseGenerator>();
+        //perlinNoise.width = 128 * (int)roomWidth;
+        //perlinNoise.height = 128 * (int)roomHeight;
+        //perlinNoise.CreatePerlinNoise();
     }
 
     private void ViewPartitions(BinarySpacePartitioningNode node, int depth)

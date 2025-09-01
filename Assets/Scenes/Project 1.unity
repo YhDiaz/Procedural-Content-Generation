@@ -167,11 +167,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b095248ac2b3b1446a3284cf6d792716, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maximumDepth: 1
-  minimumRoomSize: 5
-  viewPartitions: 0
-  rootTopLeftCorner: {x: 0, y: 50}
-  rootBottomRightCorner: {x: 50, y: 0}
+  maximumDepth: 2
+  minimumRoomSize: 10
+  viewPartitions: 1
+  rootTopLeftCorner: {x: 0, y: 25}
+  rootBottomRightCorner: {x: 25, y: 0}
   roomPrefab: {fileID: 6994182726300606446, guid: 63d63f29750b50a4495140058269d348, type: 3}
   corridorPrefab: {fileID: 271736471214786012, guid: ded3ecc55784a864e836c0992d7a2286, type: 3}
 --- !u!1 &1995952935
@@ -235,7 +235,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 45
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
