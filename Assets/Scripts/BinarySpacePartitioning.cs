@@ -2,13 +2,12 @@ using UnityEngine;
 
 public class BinarySpacePartitioning : MonoBehaviour
 {
-    [SerializeField] private bool viewPartitions = false;
+    [SerializeField] private bool viewPartitions = true;
+    [SerializeField] private bool alternatePartitions = true;
     [SerializeField] private int maximumDepth = 1;
-    [SerializeField] private int minimumRoomSize = 5;
     [SerializeField, Range(0.05f, 0.5f)] private float partitionCenterBias = 0.15f;
     [SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMin = 0.5f;
     [SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMax = 0.85f;
-    //[SerializeField, Range(0.3f, 0.95f)] private float roomCoverage = 0.8f;
     [SerializeField] private Vector2 rootTopLeftCorner = new(0f, 50f);
     [SerializeField] private Vector2 rootBottomRightCorner = new(50f, 0f);
     [SerializeField] private GameObject roomPrefab;
@@ -75,19 +74,19 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SplitNode(BinarySpacePartitioningNode node, int depth)
     {
-        int currentMinimumSize = minimumRoomSize * (maximumDepth - depth);
-        int splitVertically = depth + splitVerticallyDefault % 2;
+        int splitVertically = alternatePartitions ? depth + splitVerticallyDefault % 2
+                                                  : Random.Range(0, 2);
 
         if (splitVertically == 1)
-            SplitNodeVertically(node, currentMinimumSize);
+            SplitNodeVertically(node);
         else
-            SplitNodeHorizontally(node, currentMinimumSize);
+            SplitNodeHorizontally(node);
     }
 
-    private void SplitNodeVertically(BinarySpacePartitioningNode node, int currentMinimumSize)
+    private void SplitNodeVertically(BinarySpacePartitioningNode node)
     {
         float centerX = (node.topLeftCorner.x + node.bottomRightCorner.x) / 2f;
-        float maximumOffsetFromCenter = Mathf.Min((node.bottomRightCorner.x - node.topLeftCorner.x) * partitionCenterBias, currentMinimumSize);
+        float maximumOffsetFromCenter = (node.bottomRightCorner.x - node.topLeftCorner.x) * partitionCenterBias;
         float minimumDivisionLimit = centerX - maximumOffsetFromCenter;
         float maximumDivisionLimit = centerX + maximumOffsetFromCenter;
         float divisionPoint = Random.Range(minimumDivisionLimit, maximumDivisionLimit);
@@ -102,10 +101,10 @@ public class BinarySpacePartitioning : MonoBehaviour
         node.right = right;
     }
 
-    private void SplitNodeHorizontally(BinarySpacePartitioningNode node, int currentMinimumSize)
+    private void SplitNodeHorizontally(BinarySpacePartitioningNode node)
     {
         float centerY = (node.topLeftCorner.y + node.bottomRightCorner.y) / 2f;
-        float maximumOffsetFromCenter = Mathf.Min((node.topLeftCorner.y - node.bottomRightCorner.y) * partitionCenterBias, currentMinimumSize);
+        float maximumOffsetFromCenter = (node.topLeftCorner.y - node.bottomRightCorner.y) * partitionCenterBias;
         float minimumDivision = centerY - maximumOffsetFromCenter;
         float maximumDivision = centerY + maximumOffsetFromCenter;
         float divisionPoint = Random.Range(minimumDivision, maximumDivision);
@@ -154,6 +153,7 @@ public class BinarySpacePartitioning : MonoBehaviour
         partLeft.GetComponent<SpriteRenderer>().color = new(1f, 0f, 0f, .3f);
         partLeft.GetComponent<SpriteRenderer>().sortingOrder = -10;
         partLeft.name = "Left " + depth;
+
         GameObject partRight = Instantiate(corridorPrefab, node.right.center, Quaternion.identity, gameObject.transform);
         partRight.transform.localScale = new Vector2(node.right.width, node.right.height);
         partRight.transform.position = node.right.center;
