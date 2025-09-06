@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class BinarySpacePartitioning : MonoBehaviour
 {
+    [SerializeField] private bool viewPartitions = false;
     [SerializeField] private int maximumDepth = 1;
     [SerializeField] private int minimumRoomSize = 5;
-    [SerializeField] private bool viewPartitions = false;
+    [SerializeField, Range(0.05f, 0.5f)] private float partitionCenterBias = 0.15f;
     [SerializeField] private Vector2 rootTopLeftCorner = new(0f, 50f);
     [SerializeField] private Vector2 rootBottomRightCorner = new(50f, 0f);
     [SerializeField] private GameObject roomPrefab;
@@ -76,7 +77,11 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SplitNodeVertically(BinarySpacePartitioningNode node, int currentMinimumSize)
     {
-        int divisionPoint = (int)Random.Range(node.topLeftCorner.x + currentMinimumSize, node.bottomRightCorner.x - currentMinimumSize);
+        float centerX = (node.topLeftCorner.x + node.bottomRightCorner.x) / 2f;
+        float maximumOffsetFromCenter = Mathf.Min((node.bottomRightCorner.x - node.topLeftCorner.x) * partitionCenterBias, currentMinimumSize);
+        float minimumDivisionLimit = centerX - maximumOffsetFromCenter;
+        float maximumDivisionLimit = centerX + maximumOffsetFromCenter;
+        float divisionPoint = Random.Range(minimumDivisionLimit, maximumDivisionLimit);
 
         BinarySpacePartitioningNode left = new(node.topLeftCorner, new(divisionPoint, node.bottomRightCorner.y));
         BinarySpacePartitioningNode right = new(new(divisionPoint, node.topLeftCorner.y), node.bottomRightCorner);
@@ -90,16 +95,17 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SplitNodeHorizontally(BinarySpacePartitioningNode node, int currentMinimumSize)
     {
-        int divisionPoint = (int)Random.Range(node.bottomRightCorner.y + currentMinimumSize, node.topLeftCorner.y - currentMinimumSize);
+        float centerY = (node.topLeftCorner.y + node.bottomRightCorner.y) / 2f;
+        float maximumOffsetFromCenter = Mathf.Min((node.topLeftCorner.y - node.bottomRightCorner.y) * partitionCenterBias, currentMinimumSize);
+        float minimumDivision = centerY - maximumOffsetFromCenter;
+        float maximumDivision = centerY + maximumOffsetFromCenter;
+        float divisionPoint = Random.Range(minimumDivision, maximumDivision);
 
         BinarySpacePartitioningNode top = new(node.topLeftCorner, new(node.bottomRightCorner.x, divisionPoint));
         BinarySpacePartitioningNode bottom = new(new(node.topLeftCorner.x, divisionPoint), node.bottomRightCorner);
 
         top.center = new((top.topLeftCorner.x + top.bottomRightCorner.x) / 2f, (top.topLeftCorner.y + top.bottomRightCorner.y) / 2f);
         bottom.center = new((bottom.topLeftCorner.x + bottom.bottomRightCorner.x) / 2f, (bottom.topLeftCorner.y + bottom.bottomRightCorner.y) / 2f);
-
-        //top.origin = new(node.topLeft.x + (node.bottomRight.x - node.topLeft.x) / 2f, divisionPoint + (node.topLeft.y - divisionPoint) / 2f);
-        //bottom.origin = new(node.topLeft.x + (node.bottomRight.x - node.topLeft.x) / 2f, (divisionPoint - node.bottomRight.y) / 2f);
 
         node.left = top;
         node.right = bottom;

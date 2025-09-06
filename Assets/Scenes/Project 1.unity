@@ -167,9 +167,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b095248ac2b3b1446a3284cf6d792716, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  viewPartitions: 1
   maximumDepth: 2
   minimumRoomSize: 10
-  viewPartitions: 1
+  partitionCenterBias: 0.15
   rootTopLeftCorner: {x: 0, y: 25}
   rootBottomRightCorner: {x: 25, y: 0}
   roomPrefab: {fileID: 6994182726300606446, guid: 63d63f29750b50a4495140058269d348, type: 3}
