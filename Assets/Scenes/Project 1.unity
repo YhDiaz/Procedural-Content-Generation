@@ -171,6 +171,8 @@ MonoBehaviour:
   maximumDepth: 2
   minimumRoomSize: 10
   partitionCenterBias: 0.15
+  roomCoverageMin: 0
+  roomCoverageMax: 0.1
   rootTopLeftCorner: {x: 0, y: 25}
   rootBottomRightCorner: {x: 25, y: 0}
   roomPrefab: {fileID: 6994182726300606446, guid: 63d63f29750b50a4495140058269d348, type: 3}

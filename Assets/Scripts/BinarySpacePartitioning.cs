@@ -6,6 +6,9 @@ public class BinarySpacePartitioning : MonoBehaviour
     [SerializeField] private int maximumDepth = 1;
     [SerializeField] private int minimumRoomSize = 5;
     [SerializeField, Range(0.05f, 0.5f)] private float partitionCenterBias = 0.15f;
+    [SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMin = 0.5f;
+    [SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMax = 0.85f;
+    //[SerializeField, Range(0.3f, 0.95f)] private float roomCoverage = 0.8f;
     [SerializeField] private Vector2 rootTopLeftCorner = new(0f, 50f);
     [SerializeField] private Vector2 rootBottomRightCorner = new(50f, 0f);
     [SerializeField] private GameObject roomPrefab;
@@ -18,6 +21,12 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void Update()
         => RegenerateRooms();
+
+    private void OnValidate()
+    {
+        if (roomCoverageMin >= roomCoverageMax)
+            roomCoverageMin = Mathf.Max(roomCoverageMax - .1f, .1f);
+    }
 
     private void InitializeTree()
     {
@@ -113,21 +122,23 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SpawnRoom(BinarySpacePartitioningNode node)
     {
-        int padding = 1;
-        int minimumDistanceBetweenPoints = 3;
+        float partitionWidth = Mathf.Abs(node.bottomRightCorner.x - node.topLeftCorner.x);
+        float partitionHeight = Mathf.Abs(node.topLeftCorner.y - node.bottomRightCorner.y);
 
-        Vector2 roomTopLeftCorner = new(Random.Range(node.topLeftCorner.x + padding, node.center.x), Random.Range(node.center.y, node.topLeftCorner.y - padding));
-        Vector2 roomBottomRightCorner = new(Random.Range(roomTopLeftCorner.x + minimumDistanceBetweenPoints, node.bottomRightCorner.x - padding), Random.Range(node.bottomRightCorner.y + padding, roomTopLeftCorner.y - minimumDistanceBetweenPoints));
+        float coverage = Random.Range(roomCoverageMin, roomCoverageMax);
+        float roomWidth = partitionWidth * coverage;
+        float roomHeight = partitionHeight * coverage;
 
-        float roomWidth = Mathf.Abs(roomBottomRightCorner.x - roomTopLeftCorner.x);
-        float roomHeight = Mathf.Abs(roomTopLeftCorner.y - roomBottomRightCorner.y);
+        Vector2 roomCenter = node.center;
+        Vector2 roomTopLeftCorner = new(roomCenter.x - roomWidth / 2f, roomCenter.y + roomHeight / 2f);
+        Vector2 roomBottomRightCorner = new(roomCenter.x + roomWidth / 2f, roomCenter.y - roomHeight / 2f);
 
         // Room relative center.
         //Vector2 roomCenter = new(roomWidth / 2f, roomHeight / 2f);
         //Vector2 roomSpawnPoint = new(roomTopLeftCorner.x + roomCenter.x, roomBottomRightCorner.y + roomCenter.y);
         //GameObject room = Instantiate(roomPrefab, roomSpawnPoint, Quaternion.identity, gameObject.transform);
-
-        GameObject room = Instantiate(roomPrefab, node.center, Quaternion.identity, gameObject.transform);
+        
+        GameObject room = Instantiate(roomPrefab, roomCenter, Quaternion.identity, gameObject.transform);
         room.transform.localScale = new Vector2(roomWidth, roomHeight);
         //PerlinNoiseGenerator perlinNoise = room.GetComponent<PerlinNoiseGenerator>();
         //perlinNoise.width = 128 * (int)roomWidth;
