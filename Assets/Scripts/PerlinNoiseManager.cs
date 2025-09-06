@@ -1,7 +1,10 @@
+using UnityEditor;
 using UnityEngine;
 
-public class PerlinNoiseGenerator : MonoBehaviour
+public class PerlinNoiseManager : MonoBehaviour
 {
+    public static System.Action OnPerlinNoiseModified;
+
     [SerializeField] private int seed = 0;
     [SerializeField, Range(0.001f, 0.1f)] private float scale = 0.01f;
     [SerializeField, Range(1, 8)] private int octaves = 4;
@@ -11,17 +14,8 @@ public class PerlinNoiseGenerator : MonoBehaviour
     [SerializeField] private Vector2 offset = Vector2.zero;
     [SerializeField] private Color baseColor = Color.red;
     [SerializeField] private Color targetColor = Color.yellow;
-    [SerializeField] private string textureName;
-    [SerializeField] private bool executeOnStart = true;
 
-    [SerializeField] private bool useLowRes = false;
-    [SerializeField, Min(1)] private int internalWidth = 32;
-    [SerializeField, Min(1)] private int internalHeight = 32;
-
-    public Texture2D noiseTexture;
-    public int width = 256;
-    public int height = 256;
-    private SpriteRenderer spriteRenderer;
+    public Texture2D globalGradientMap;
     private int[] permutation;
     private int lastSeed = -1;
 
@@ -36,41 +30,62 @@ public class PerlinNoiseGenerator : MonoBehaviour
             lastSeed = seed;
         }
 
-        GenerateTexture();
+        OnPerlinNoiseModified?.Invoke();
     }
 
-    private void Start()
+
+    public void GenerateGlobalGradientMap(int mapWidth, int mapHeight)
     {
-        if (executeOnStart)
-            CreatePerlinNoise();
-    }
-
-    [ContextMenu("Save Texture")]
-    public void SaveTexture()
-    {
-        if (noiseTexture == null)
-        {
-            Debug.LogWarning("No texture to save. Generate the texture first.");
-            return;
-        }
-
-        if (string.IsNullOrEmpty(textureName))
-        {
-            Debug.LogWarning("Please provide a valid texture name.");
-            return;
-        }
-
-        byte[] bytes = noiseTexture.EncodeToPNG();
-        string filePath = Application.dataPath + "/Art/Textures/" + textureName + ".png";
-        System.IO.File.WriteAllBytes(filePath, bytes);
-        Debug.Log("Texture saved to: " + filePath);
-    }
-
-    public void CreatePerlinNoise()
-    {
-        spriteRenderer = GetComponent<SpriteRenderer>();
         InitializePermutationTable();
-        GenerateTexture();
+        globalGradientMap = new Texture2D(mapWidth, mapHeight);
+        for (int x = 0; x < mapWidth; x++)
+        {
+            for (int y = 0; y < mapHeight; y++)
+            {
+                float amplitude = 1f;
+                float frequency = 1f;
+                float noiseValue = 0f;
+
+                for (int o = 0; o < octaves; o++)
+                {
+                    float sampleX = (x + offset.x) * scale * frequency;
+                    float sampleY = (y + offset.y) * scale * frequency;
+
+                    float perlinValue = Perlin(sampleX, sampleY) * 2 - 1;
+                    noiseValue += perlinValue * amplitude;
+
+                    amplitude *= persistence;
+                    frequency *= lacunarity;
+                }
+
+                float normalizedNoise = (noiseValue + 1f) * 0.5f;
+                normalizedNoise = Mathf.Clamp01(normalizedNoise + brightness);
+                Color color = Color.Lerp(baseColor, targetColor, normalizedNoise);
+                globalGradientMap.SetPixel(x, y, color);
+            }
+        }
+        globalGradientMap.Apply();
+    }
+
+    public Texture2D GenerateRoomTextureFromGlobalMap(RectInt region)
+    {
+        if (globalGradientMap == null)
+        {
+            Debug.LogError("Global gradient map not generated!");
+            return null;
+        }
+
+        Texture2D roomTexture = new Texture2D(region.width, region.height);
+        for (int x = 0; x < region.width; x++)
+        {
+            for (int y = 0; y < region.height; y++)
+            {
+                Color c = globalGradientMap.GetPixel(region.x + x, region.y + y);
+                roomTexture.SetPixel(x, y, c);
+            }
+        }
+        roomTexture.Apply();
+        return roomTexture;
     }
 
     // Inicializa la tabla de permutación basada en la semilla
@@ -96,74 +111,6 @@ public class PerlinNoiseGenerator : MonoBehaviour
             permutation[i] = basePerm[i % 256];
 
         Debug.Log("Permutation table initialized with seed: " + seed);
-    }
-
-    public void GenerateTexture()
-    {
-        Debug.Log($"width: {width}, height: {height}");
-
-        int texWidth = width;
-        int texHeight = height;
-        Texture2D sourceTexture;
-        bool useLowResTexture = useLowRes && (internalWidth < width || internalHeight < height);
-
-        if (useLowResTexture)
-        {
-            texWidth = internalWidth;
-            texHeight = internalHeight;
-        }
-
-        sourceTexture = new Texture2D(texWidth, texHeight);
-
-        for (int x = 0; x < texWidth; x++)
-        {
-            for (int y = 0; y < texHeight; y++)
-            {
-                float amplitude = 1f;
-                float frequency = 1f;
-                float noiseValue = 0f;
-
-                for (int o = 0; o < octaves; o++)
-                {
-                    float sampleX = (x + offset.x) * scale * frequency;
-                    float sampleY = (y + offset.y) * scale * frequency;
-
-                    float perlinValue = Perlin(sampleX, sampleY) * 2 - 1;
-                    noiseValue += perlinValue * amplitude;
-
-                    amplitude *= persistence;
-                    frequency *= lacunarity;
-                }
-
-                float normalizedNoise = (noiseValue + 1f) * 0.5f;
-                normalizedNoise = Mathf.Clamp01(normalizedNoise + brightness);
-                Color color = Color.Lerp(baseColor, targetColor, normalizedNoise);
-                sourceTexture.SetPixel(x, y, color);
-            }
-        }
-        sourceTexture.Apply();
-
-        if (useLowResTexture)
-        {
-            noiseTexture = new Texture2D(width, height);
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    float u = (float)x / (width - 1);
-                    float v = (float)y / (height - 1);
-                    Color color = sourceTexture.GetPixelBilinear(u, v);
-                    noiseTexture.SetPixel(x, y, color);
-                }
-            }
-            noiseTexture.Apply();
-        }
-        else
-        {
-            noiseTexture = sourceTexture;
-        }
-
-        spriteRenderer.sprite = Sprite.Create(noiseTexture, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f));
     }
 
     private float Perlin(float x, float y)

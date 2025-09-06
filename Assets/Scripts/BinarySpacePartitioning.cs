@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BinarySpacePartitioning : MonoBehaviour
@@ -14,6 +15,8 @@ public class BinarySpacePartitioning : MonoBehaviour
     [SerializeField] private GameObject corridorPrefab;
 
     private int splitVerticallyDefault;
+    private PerlinNoiseManager perlinNoiseManager;
+    private List<GameObject> rooms = new();
 
     private void Start()
         => InitializeTree();
@@ -26,13 +29,66 @@ public class BinarySpacePartitioning : MonoBehaviour
         if (roomCoverageMin >= roomCoverageMax)
             roomCoverageMin = Mathf.Max(roomCoverageMax - .1f, .1f);
     }
+    private void OnEnable()
+    {
+        PerlinNoiseManager.OnPerlinNoiseModified += UpdateRoomTexturesFromManager;
+    }
+    private void OnDisable()
+    {
+        PerlinNoiseManager.OnPerlinNoiseModified -= UpdateRoomTexturesFromManager;
+    }
+
+    private void UpdateRoomTexturesFromManager()
+    {
+        if (Application.isPlaying)
+        {
+            if (perlinNoiseManager == null)
+                perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
+
+            if (perlinNoiseManager == null)
+                return;
+
+            int mapWidth = Mathf.RoundToInt(rootBottomRightCorner.x - rootTopLeftCorner.x);
+            int mapHeight = Mathf.RoundToInt(rootTopLeftCorner.y - rootBottomRightCorner.y);
+            perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
+
+            // Reasignar la textura a cada room
+            foreach (var room in rooms)
+            {
+                if (room == null) continue;
+                var sr = room.GetComponent<SpriteRenderer>();
+                if (sr == null) continue;
+
+                Vector2 roomCenter = room.transform.position;
+                Vector2 roomScale = room.transform.localScale;
+                Vector2 roomTopLeftCorner = new Vector2(roomCenter.x - roomScale.x / 2f, roomCenter.y + roomScale.y / 2f);
+
+                int globalX = Mathf.RoundToInt(roomTopLeftCorner.x - rootTopLeftCorner.x);
+                int globalY = Mathf.RoundToInt(rootTopLeftCorner.y - roomTopLeftCorner.y);
+                int regionWidth = Mathf.RoundToInt(roomScale.x);
+                int regionHeight = Mathf.RoundToInt(roomScale.y);
+
+                RectInt region = new RectInt(globalX, globalY, regionWidth, regionHeight);
+
+                Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
+                sr.sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50);
+            }
+        }
+    }
 
     private void InitializeTree()
     {
-        Random.InitState((int)System.DateTime.Now.Ticks);
         splitVerticallyDefault = Random.Range(0, 2);
         BinarySpacePartitioningNode root = new(rootTopLeftCorner, rootBottomRightCorner);
         root.center = new((root.topLeftCorner.x + root.bottomRightCorner.x) / 2f, (root.topLeftCorner.y + root.bottomRightCorner.y) / 2f);
+
+        perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
+        int mapWidth = Mathf.RoundToInt(rootBottomRightCorner.x - rootTopLeftCorner.x);
+        int mapHeight = Mathf.RoundToInt(rootTopLeftCorner.y - rootBottomRightCorner.y);
+        perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
+
+        Random.InitState((int)System.DateTime.Now.Ticks);
+
         SubdivideNode(root, 0);
         ConnectRooms(root, 0);
     }
@@ -50,6 +106,8 @@ public class BinarySpacePartitioning : MonoBehaviour
     {
         for (int i = 0; i < transform.childCount; i++)
             Destroy(transform.GetChild(i).gameObject);
+
+        rooms.Clear();
     }
 
     private bool TriggerRegenerateRooms()
@@ -74,7 +132,7 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SplitNode(BinarySpacePartitioningNode node, int depth)
     {
-        int splitVertically = alternatePartitions ? depth + splitVerticallyDefault % 2
+        int splitVertically = alternatePartitions ? (depth + splitVerticallyDefault) % 2
                                                   : Random.Range(0, 2);
 
         if (splitVertically == 1)
@@ -139,10 +197,19 @@ public class BinarySpacePartitioning : MonoBehaviour
         
         GameObject room = Instantiate(roomPrefab, roomCenter, Quaternion.identity, gameObject.transform);
         room.transform.localScale = new Vector2(roomWidth, roomHeight);
-        //PerlinNoiseGenerator perlinNoise = room.GetComponent<PerlinNoiseGenerator>();
-        //perlinNoise.width = 128 * (int)roomWidth;
-        //perlinNoise.height = 128 * (int)roomHeight;
-        //perlinNoise.CreatePerlinNoise();
+
+        int globalX = Mathf.RoundToInt(roomTopLeftCorner.x - rootTopLeftCorner.x);
+        int globalY = Mathf.RoundToInt(rootTopLeftCorner.y - roomTopLeftCorner.y);
+        int regionWidth = Mathf.RoundToInt(roomWidth);
+        int regionHeight = Mathf.RoundToInt(roomHeight);
+
+        RectInt region = new RectInt(globalX, globalY, regionWidth, regionHeight);
+
+        // Genera la textura de la room a partir del mapa global
+        Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
+        room.GetComponent<SpriteRenderer>().sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50) ;
+
+        rooms.Add(room);
     }
 
     private void ViewPartitions(BinarySpacePartitioningNode node, int depth)
@@ -151,14 +218,14 @@ public class BinarySpacePartitioning : MonoBehaviour
         partLeft.transform.localScale = new Vector2(node.left.width, node.left.height);
         partLeft.transform.position = node.left.center;
         partLeft.GetComponent<SpriteRenderer>().color = new(1f, 0f, 0f, .3f);
-        partLeft.GetComponent<SpriteRenderer>().sortingOrder = -10;
+        partLeft.GetComponent<SpriteRenderer>().sortingOrder = -30;
         partLeft.name = "Left " + depth;
 
         GameObject partRight = Instantiate(corridorPrefab, node.right.center, Quaternion.identity, gameObject.transform);
         partRight.transform.localScale = new Vector2(node.right.width, node.right.height);
         partRight.transform.position = node.right.center;
         partRight.GetComponent<SpriteRenderer>().color = new(0f, 0f, 1f, .3f);
-        partRight.GetComponent<SpriteRenderer>().sortingOrder = -10;
+        partRight.GetComponent<SpriteRenderer>().sortingOrder = -30;
         partRight.name = "Right " + depth;
     }
 

@@ -9,9 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3759813079893954646}
+  - component: {fileID: -4594260504420516726}
   - component: {fileID: 801834477044265936}
   m_Layer: 0
-  m_Name: Room
+  m_Name: PerlinNoise
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,6 +33,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &-4594260504420516726
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6994182726300606446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba599b3ed6455c94795fe8c72785c7d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  seed: 2
+  scale: 0.03
+  octaves: 4
+  persistence: 0.5
+  lacunarity: 1
+  brightness: 0.55
+  offset: {x: 0, y: 0}
+  baseColor: {r: 1, g: 0, b: 0, a: 1}
+  targetColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  textureName: 
+  executeOnStart: 0
+  useLowRes: 1
+  internalWidth: 128
+  internalHeight: 128
+  noiseTexture: {fileID: 0}
+  width: 100
+  height: 100
 --- !u!212 &801834477044265936
 SpriteRenderer:
   m_ObjectHideFlags: 0
