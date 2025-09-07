@@ -5,15 +5,25 @@ public class PerlinNoiseManager : MonoBehaviour
 {
     public static System.Action OnPerlinNoiseModified;
 
-    [SerializeField] private int seed = 0;
-    [SerializeField, Range(0.001f, 0.5f)] private float scale = 0.01f;
-    [SerializeField, Range(1, 8)] private int octaves = 4;
-    [SerializeField, Range(0.01f, 0.99f)] private float persistence = 0.5f;
-    [SerializeField, Range(0f, 10f)] private float lacunarity = 2f;
-    [SerializeField, Range(0f, 1f)] private float brightness = 0.2f;
-    [SerializeField] private Vector2 offset = Vector2.zero;
+    public int seed = 0;
+    public float scale = 0.01f;
+    public int octaves = 4;
+    public float persistence = 0.5f;
+    public float lacunarity = 2f;
+    public float brightness = 0.2f;
+    public Vector2 offset = Vector2.zero;
     [SerializeField] private Color baseColor = Color.red;
     [SerializeField] private Color targetColor = Color.yellow;
+
+    //[SerializeField] private int seed = 0;
+    //[SerializeField, Range(0.001f, 0.1f)] private float scale = 0.01f;
+    //[SerializeField, Range(1, 8)] private int octaves = 4;
+    //[SerializeField, Range(0.01f, 0.99f)] private float persistence = 0.5f;
+    //[SerializeField, Range(0f, 10f)] private float lacunarity = 2f;
+    //[SerializeField, Range(0f, 1f)] private float brightness = 0.2f;
+    //[SerializeField] private Vector2 offset = Vector2.zero;
+    //[SerializeField] private Color baseColor = Color.red;
+    //[SerializeField] private Color targetColor = Color.yellow;
 
     public Texture2D globalGradientMap;
     private int[] permutation;
@@ -88,7 +98,7 @@ public class PerlinNoiseManager : MonoBehaviour
         return roomTexture;
     }
 
-    // Inicializa la tabla de permutación basada en la semilla
+    // Inicializa la tabla de permutaciï¿½n basada en la semilla
     private void InitializePermutationTable()
     {
         Random.InitState(seed);
