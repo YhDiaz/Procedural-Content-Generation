@@ -3,31 +3,32 @@ using UnityEngine;
 
 public class BinarySpacePartitioning : MonoBehaviour
 {
-    [SerializeField] private bool viewPartitions = true;
-    [SerializeField] private bool alternatePartitions = true;
-    [SerializeField] private int maximumDepth = 1;
-    [SerializeField, Range(0.05f, 0.5f)] private float partitionCenterBias = 0.15f;
-    [SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMin = 0.5f;
-    [SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMax = 0.85f;
-    [SerializeField] private Vector2 rootTopLeftCorner = new(0f, 50f);
-    [SerializeField] private Vector2 rootBottomRightCorner = new(50f, 0f);
+    //[SerializeField] private bool viewPartitions = true;
+    //[SerializeField] private bool alternatePartitions = true;
+    //[SerializeField] private int maximumDepth = 1;
+    //[SerializeField, Range(0.05f, 0.5f)] private float partitionCenterBias = 0.15f;
+    //[SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMin = 0.5f;
+    //[SerializeField, Range(0.1f, 0.95f)] private float roomCoverageMax = 0.85f;
+    //[SerializeField] private Vector2 rootTopLeftCorner = new(0f, 50f);
+    //[SerializeField] private Vector2 rootBottomRightCorner = new(50f, 0f);
+    [SerializeField] private BinarySpacePartitioningSettings settings;
     [SerializeField] private GameObject roomPrefab;
     [SerializeField] private GameObject corridorPrefab;
 
     private int splitVerticallyDefault;
-    private PerlinNoiseManager perlinNoiseManager;
+    //private PerlinNoiseManager perlinNoiseManager;
     private List<GameObject> rooms = new();
 
-    private void Start()
-        => InitializeTree();
+    //private void Start()
+    //    => InitializeTree();
 
-    private void Update()
-        => RegenerateRooms();
+    //private void Update()
+    //    => RegenerateRooms();
 
     private void OnValidate()
     {
-        if (roomCoverageMin >= roomCoverageMax)
-            roomCoverageMin = Mathf.Max(roomCoverageMax - .1f, .1f);
+        if (settings.roomCoverageMin >= settings.roomCoverageMax)
+            settings.roomCoverageMin = Mathf.Max(settings.roomCoverageMax - .1f, .1f);
     }
     private void OnEnable()
     {
@@ -42,15 +43,15 @@ public class BinarySpacePartitioning : MonoBehaviour
     {
         if (Application.isPlaying)
         {
-            if (perlinNoiseManager == null)
-                perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
+            //if (perlinNoiseManager == null)
+            //    perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
 
-            if (perlinNoiseManager == null)
-                return;
+            //if (perlinNoiseManager == null)
+            //    return;
 
-            int mapWidth = Mathf.RoundToInt(rootBottomRightCorner.x - rootTopLeftCorner.x);
-            int mapHeight = Mathf.RoundToInt(rootTopLeftCorner.y - rootBottomRightCorner.y);
-            perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
+            //int mapWidth = Mathf.RoundToInt(settings.rootBottomRightCorner.x - settings.rootTopLeftCorner.x);
+            //int mapHeight = Mathf.RoundToInt(settings.rootTopLeftCorner.y - settings.rootBottomRightCorner.y);
+            //perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
 
             // Reasignar la textura a cada room
             foreach (var room in rooms)
@@ -63,15 +64,15 @@ public class BinarySpacePartitioning : MonoBehaviour
                 Vector2 roomScale = room.transform.localScale;
                 Vector2 roomTopLeftCorner = new Vector2(roomCenter.x - roomScale.x / 2f, roomCenter.y + roomScale.y / 2f);
 
-                int globalX = Mathf.RoundToInt(roomTopLeftCorner.x - rootTopLeftCorner.x);
-                int globalY = Mathf.RoundToInt(rootTopLeftCorner.y - roomTopLeftCorner.y);
+                int globalX = Mathf.RoundToInt(roomTopLeftCorner.x - settings.rootTopLeftCorner.x);
+                int globalY = Mathf.RoundToInt(settings.rootTopLeftCorner.y - roomTopLeftCorner.y);
                 int regionWidth = Mathf.RoundToInt(roomScale.x);
                 int regionHeight = Mathf.RoundToInt(roomScale.y);
 
                 RectInt region = new RectInt(globalX, globalY, regionWidth, regionHeight);
 
-                Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
-                sr.sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50);
+                //Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
+                //sr.sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50);
             }
         }
     }
@@ -79,13 +80,13 @@ public class BinarySpacePartitioning : MonoBehaviour
     private void InitializeTree()
     {
         splitVerticallyDefault = Random.Range(0, 2);
-        BinarySpacePartitioningNode root = new(rootTopLeftCorner, rootBottomRightCorner);
+        BinarySpacePartitioningNode root = new(settings.rootTopLeftCorner, settings.rootBottomRightCorner);
         root.center = new((root.topLeftCorner.x + root.bottomRightCorner.x) / 2f, (root.topLeftCorner.y + root.bottomRightCorner.y) / 2f);
 
-        perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
-        int mapWidth = Mathf.RoundToInt(rootBottomRightCorner.x - rootTopLeftCorner.x);
-        int mapHeight = Mathf.RoundToInt(rootTopLeftCorner.y - rootBottomRightCorner.y);
-        perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
+        //perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
+        //int mapWidth = Mathf.RoundToInt(settings.rootBottomRightCorner.x - settings.rootTopLeftCorner.x);
+        //int mapHeight = Mathf.RoundToInt(settings.rootTopLeftCorner.y - settings.rootBottomRightCorner.y);
+        //perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
 
         Random.InitState((int)System.DateTime.Now.Ticks);
 
@@ -93,10 +94,10 @@ public class BinarySpacePartitioning : MonoBehaviour
         ConnectRooms(root, 0);
     }
 
-    private void RegenerateRooms()
+    public void GenerateRooms()
     {
-        if (!TriggerRegenerateRooms())
-            return;
+        //if (!TriggerRegenerateRooms())
+        //    return;
 
         DeleteCurrentRooms();
         InitializeTree();
@@ -115,7 +116,7 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SubdivideNode(BinarySpacePartitioningNode node, int depth)
     {
-        if (depth >= maximumDepth)
+        if (depth >= settings.maximumDepth)
         {
             SpawnRoom(node);
             return;
@@ -123,7 +124,7 @@ public class BinarySpacePartitioning : MonoBehaviour
 
         SplitNode(node, depth);
 
-        if (viewPartitions)
+        if (settings.viewPartitions)
             ViewPartitions(node, depth);
 
         SubdivideNode(node.left, depth + 1);
@@ -132,7 +133,7 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void SplitNode(BinarySpacePartitioningNode node, int depth)
     {
-        int splitVertically = alternatePartitions ? (depth + splitVerticallyDefault) % 2
+        int splitVertically = settings.alternatePartitions ? (depth + splitVerticallyDefault) % 2
                                                   : Random.Range(0, 2);
 
         if (splitVertically == 1)
@@ -144,7 +145,7 @@ public class BinarySpacePartitioning : MonoBehaviour
     private void SplitNodeVertically(BinarySpacePartitioningNode node)
     {
         float centerX = (node.topLeftCorner.x + node.bottomRightCorner.x) / 2f;
-        float maximumOffsetFromCenter = (node.bottomRightCorner.x - node.topLeftCorner.x) * partitionCenterBias;
+        float maximumOffsetFromCenter = (node.bottomRightCorner.x - node.topLeftCorner.x) * settings.partitionCenterBias;
         float minimumDivisionLimit = centerX - maximumOffsetFromCenter;
         float maximumDivisionLimit = centerX + maximumOffsetFromCenter;
         float divisionPoint = Random.Range(minimumDivisionLimit, maximumDivisionLimit);
@@ -162,7 +163,7 @@ public class BinarySpacePartitioning : MonoBehaviour
     private void SplitNodeHorizontally(BinarySpacePartitioningNode node)
     {
         float centerY = (node.topLeftCorner.y + node.bottomRightCorner.y) / 2f;
-        float maximumOffsetFromCenter = (node.topLeftCorner.y - node.bottomRightCorner.y) * partitionCenterBias;
+        float maximumOffsetFromCenter = (node.topLeftCorner.y - node.bottomRightCorner.y) * settings.partitionCenterBias;
         float minimumDivision = centerY - maximumOffsetFromCenter;
         float maximumDivision = centerY + maximumOffsetFromCenter;
         float divisionPoint = Random.Range(minimumDivision, maximumDivision);
@@ -182,7 +183,7 @@ public class BinarySpacePartitioning : MonoBehaviour
         float partitionWidth = Mathf.Abs(node.bottomRightCorner.x - node.topLeftCorner.x);
         float partitionHeight = Mathf.Abs(node.topLeftCorner.y - node.bottomRightCorner.y);
 
-        float coverage = Random.Range(roomCoverageMin, roomCoverageMax);
+        float coverage = Random.Range(settings.roomCoverageMin, settings.roomCoverageMax);
         float roomWidth = partitionWidth * coverage;
         float roomHeight = partitionHeight * coverage;
 
@@ -198,16 +199,16 @@ public class BinarySpacePartitioning : MonoBehaviour
         GameObject room = Instantiate(roomPrefab, roomCenter, Quaternion.identity, gameObject.transform);
         room.transform.localScale = new Vector2(roomWidth, roomHeight);
 
-        int globalX = Mathf.RoundToInt(roomTopLeftCorner.x - rootTopLeftCorner.x);
-        int globalY = Mathf.RoundToInt(rootTopLeftCorner.y - roomTopLeftCorner.y);
+        int globalX = Mathf.RoundToInt(roomTopLeftCorner.x - settings.rootTopLeftCorner.x);
+        int globalY = Mathf.RoundToInt(settings.rootTopLeftCorner.y - roomTopLeftCorner.y);
         int regionWidth = Mathf.RoundToInt(roomWidth);
         int regionHeight = Mathf.RoundToInt(roomHeight);
 
         RectInt region = new RectInt(globalX, globalY, regionWidth, regionHeight);
 
         // Genera la textura de la room a partir del mapa global
-        Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
-        room.GetComponent<SpriteRenderer>().sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50) ;
+        //Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
+        //room.GetComponent<SpriteRenderer>().sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50) ;
 
         rooms.Add(room);
     }
@@ -231,7 +232,7 @@ public class BinarySpacePartitioning : MonoBehaviour
 
     private void ConnectRooms(BinarySpacePartitioningNode node, int depth)
     {
-        if (depth >= maximumDepth)
+        if (depth >= settings.maximumDepth)
             return;
 
         ConnectRooms(node.left, depth + 1);
