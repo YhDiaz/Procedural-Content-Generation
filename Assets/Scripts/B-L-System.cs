@@ -5,15 +5,23 @@ using UnityEngine;
 
 public class B_L_System : MonoBehaviour
 {
-    [SerializeField] public LineRenderer linePrefab;
-    [SerializeField, Range(1, 7)] private int iterations = 4;
-    [SerializeField, Range(0, 360)] private float rotAngle = 20f;
-    [SerializeField, Range(.01f, 5)] private float lineLength = 1f;
+    public int iterations = 4;
+    public float rotAngle = 20f;
+    public float lineLength = 1f;
     //[SerializeField] private List<char> alphabet = new List<char> { 'F', '+', '-', '[', ']' };
-    [SerializeField] private string axiom = "X";
-    [SerializeField] private List<char> LHS = new List<char>() { 'X' };
-    [SerializeField]
-    private List<string> RHS = new List<string>() { "^<XF^<XFX-F^>>XFX&F+>>XFX-F>X->" };
+    public string axiom = "F";
+    public List<char> LHS = new List<char>() { 'F' };
+    public List<string> RHS = new List<string>() { "^F+[F]-[F]F" };
+
+    [SerializeField] public LineRenderer linePrefab;
+    //[SerializeField, Range(1, 7)] private int iterations = 4;
+    //[SerializeField, Range(0, 360)] private float rotAngle = 20f;
+    //[SerializeField, Range(.01f, 5)] private float lineLength = 1f;
+    ////[SerializeField] private List<char> alphabet = new List<char> { 'F', '+', '-', '[', ']' };
+    //[SerializeField] private string axiom = "X";
+    //[SerializeField] private List<char> LHS = new List<char>() { 'X' };
+    //[SerializeField]
+    //private List<string> RHS = new List<string>() { "^<XF^<XFX-F^>>XFX&F+>>XFX-F>X->" };
     [SerializeField] private List<char> nonDrawers = new List<char>() { 'X' };
 
 
@@ -23,22 +31,22 @@ public class B_L_System : MonoBehaviour
     Vector3 currentPosition;
     string currentString;
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            GenerateLSystem();
-        }
-    }
+    //void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.Space))
+    //    {
+    //        GenerateLSystem();
+    //    }
+    //}
 
-    private void OnValidate()
-    {
-        if (!Application.isPlaying)
-            return;
-        GenerateLSystem();
-    }
+    //private void OnValidate()
+    //{
+    //    if (!Application.isPlaying)
+    //        return;
+    //    GenerateLSystem();
+    //}
 
-    private void GenerateLSystem()
+    public void GenerateLSystem()
     {
         currentString = axiom;
         for (int i = 0; i < iterations; i++)
