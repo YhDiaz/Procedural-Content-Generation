@@ -6,7 +6,7 @@ public class PerlinNoiseManager : MonoBehaviour
     public static System.Action OnPerlinNoiseModified;
 
     [SerializeField] private int seed = 0;
-    [SerializeField, Range(0.001f, 0.1f)] private float scale = 0.01f;
+    [SerializeField, Range(0.001f, 0.5f)] private float scale = 0.01f;
     [SerializeField, Range(1, 8)] private int octaves = 4;
     [SerializeField, Range(0.01f, 0.99f)] private float persistence = 0.5f;
     [SerializeField, Range(0f, 10f)] private float lacunarity = 2f;
