@@ -16,7 +16,7 @@ public class BinarySpacePartitioning : MonoBehaviour
     [SerializeField] private GameObject corridorPrefab;
 
     private int splitVerticallyDefault;
-    //private PerlinNoiseManager perlinNoiseManager;
+    private PerlinNoiseManager perlinNoiseManager;
     private List<GameObject> rooms = new();
 
     //private void Start()
@@ -33,6 +33,7 @@ public class BinarySpacePartitioning : MonoBehaviour
     private void OnEnable()
     {
         PerlinNoiseManager.OnPerlinNoiseModified += UpdateRoomTexturesFromManager;
+
     }
     private void OnDisable()
     {
@@ -43,15 +44,17 @@ public class BinarySpacePartitioning : MonoBehaviour
     {
         if (Application.isPlaying)
         {
-            //if (perlinNoiseManager == null)
-            //    perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
+            if (perlinNoiseManager == null)
+                perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
 
-            //if (perlinNoiseManager == null)
-            //    return;
+            if (perlinNoiseManager == null)
+                return;
 
-            //int mapWidth = Mathf.RoundToInt(settings.rootBottomRightCorner.x - settings.rootTopLeftCorner.x);
-            //int mapHeight = Mathf.RoundToInt(settings.rootTopLeftCorner.y - settings.rootBottomRightCorner.y);
-            //perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
+            int mapWidth = Mathf.RoundToInt(settings.rootBottomRightCorner.x - settings.rootTopLeftCorner.x);
+            int mapHeight = Mathf.RoundToInt(settings.rootTopLeftCorner.y - settings.rootBottomRightCorner.y);
+            perlinNoiseManager.mapHeight = mapHeight;
+            perlinNoiseManager.mapWidth = mapWidth;
+            perlinNoiseManager.GenerateGlobalGradientMap();
 
             // Reasignar la textura a cada room
             foreach (var room in rooms)
@@ -71,8 +74,8 @@ public class BinarySpacePartitioning : MonoBehaviour
 
                 RectInt region = new RectInt(globalX, globalY, regionWidth, regionHeight);
 
-                //Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
-                //sr.sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50);
+                Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
+                sr.sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50);
             }
         }
     }
@@ -83,10 +86,12 @@ public class BinarySpacePartitioning : MonoBehaviour
         BinarySpacePartitioningNode root = new(settings.rootTopLeftCorner, settings.rootBottomRightCorner);
         root.center = new((root.topLeftCorner.x + root.bottomRightCorner.x) / 2f, (root.topLeftCorner.y + root.bottomRightCorner.y) / 2f);
 
-        //perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
-        //int mapWidth = Mathf.RoundToInt(settings.rootBottomRightCorner.x - settings.rootTopLeftCorner.x);
-        //int mapHeight = Mathf.RoundToInt(settings.rootTopLeftCorner.y - settings.rootBottomRightCorner.y);
-        //perlinNoiseManager.GenerateGlobalGradientMap(mapWidth, mapHeight);
+        perlinNoiseManager = FindObjectOfType<PerlinNoiseManager>();
+        int mapWidth = Mathf.RoundToInt(settings.rootBottomRightCorner.x - settings.rootTopLeftCorner.x);
+        int mapHeight = Mathf.RoundToInt(settings.rootTopLeftCorner.y - settings.rootBottomRightCorner.y);
+        perlinNoiseManager.mapHeight = mapHeight;
+        perlinNoiseManager.mapWidth = mapWidth;
+        perlinNoiseManager.GenerateGlobalGradientMap();
 
         Random.InitState((int)System.DateTime.Now.Ticks);
 
@@ -197,18 +202,18 @@ public class BinarySpacePartitioning : MonoBehaviour
         //GameObject room = Instantiate(roomPrefab, roomSpawnPoint, Quaternion.identity, gameObject.transform);
         
         GameObject room = Instantiate(roomPrefab, roomCenter, Quaternion.identity, gameObject.transform);
-        room.transform.localScale = new Vector2(roomWidth, roomHeight);
+        //room.transform.localScale = new Vector2(roomWidth, roomHeight);
 
         int globalX = Mathf.RoundToInt(roomTopLeftCorner.x - settings.rootTopLeftCorner.x);
         int globalY = Mathf.RoundToInt(settings.rootTopLeftCorner.y - roomTopLeftCorner.y);
-        int regionWidth = Mathf.RoundToInt(roomWidth);
-        int regionHeight = Mathf.RoundToInt(roomHeight);
+        int regionWidth = Mathf.RoundToInt(roomWidth) * 100;
+        int regionHeight = Mathf.RoundToInt(roomHeight) * 100;
 
         RectInt region = new RectInt(globalX, globalY, regionWidth, regionHeight);
 
         // Genera la textura de la room a partir del mapa global
-        //Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
-        //room.GetComponent<SpriteRenderer>().sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f), pixelsPerUnit: 50) ;
+        Texture2D roomTexture = perlinNoiseManager.GenerateRoomTextureFromGlobalMap(region);
+        room.GetComponent<SpriteRenderer>().sprite = Sprite.Create(roomTexture, new Rect(0, 0, regionWidth, regionHeight), new Vector2(0.5f, 0.5f));
 
         rooms.Add(room);
     }

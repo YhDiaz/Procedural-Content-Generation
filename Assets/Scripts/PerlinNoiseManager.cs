@@ -15,6 +15,9 @@ public class PerlinNoiseManager : MonoBehaviour
     [SerializeField] private Color baseColor = Color.red;
     [SerializeField] private Color targetColor = Color.yellow;
 
+    public int mapWidth;
+    public int mapHeight;
+
     //[SerializeField] private int seed = 0;
     //[SerializeField, Range(0.001f, 0.1f)] private float scale = 0.01f;
     //[SerializeField, Range(1, 8)] private int octaves = 4;
@@ -44,7 +47,7 @@ public class PerlinNoiseManager : MonoBehaviour
     }
 
 
-    public void GenerateGlobalGradientMap(int mapWidth, int mapHeight)
+    public void GenerateGlobalGradientMap()
     {
         InitializePermutationTable();
         globalGradientMap = new Texture2D(mapWidth, mapHeight);
@@ -75,6 +78,7 @@ public class PerlinNoiseManager : MonoBehaviour
             }
         }
         globalGradientMap.Apply();
+        OnPerlinNoiseModified?.Invoke();
     }
 
     public Texture2D GenerateRoomTextureFromGlobalMap(RectInt region)
@@ -98,7 +102,7 @@ public class PerlinNoiseManager : MonoBehaviour
         return roomTexture;
     }
 
-    // Inicializa la tabla de permutación basada en la semilla
+    // Inicializa la tabla de permutaciï¿½n basada en la semilla
     private void InitializePermutationTable()
     {
         Random.InitState(seed);
