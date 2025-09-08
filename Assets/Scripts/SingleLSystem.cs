@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class B_L_System : MonoBehaviour
+public class SingleLSystem : MonoBehaviour
 {
     public int iterations = 4;
     public float rotAngle = 20f;
@@ -30,21 +30,6 @@ public class B_L_System : MonoBehaviour
     Vector3 currentPosition;
     string currentString;
 
-    //void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.Space))
-    //    {
-    //        GenerateLSystem();
-    //    }
-    //}
-
-    //private void OnValidate()
-    //{
-    //    if (!Application.isPlaying)
-    //        return;
-    //    GenerateLSystem();
-    //}
-
     public void GenerateLSystem()
     {
         currentString = axiom;
@@ -64,7 +49,7 @@ public class B_L_System : MonoBehaviour
             currentString = newString;
         }
 
-        currentPosition = Vector3.zero; 
+        currentPosition = transform.position; 
         currentRotation = Quaternion.identity; // Check if this is pointing up
 
         foreach (Transform child in transform) // Clear previous lines

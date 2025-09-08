@@ -12,8 +12,8 @@ public class PerlinNoiseManager : MonoBehaviour
     public float lacunarity = 2f;
     public float brightness = 0.2f;
     public Vector2 offset = Vector2.zero;
-    [SerializeField] private Color baseColor = Color.red;
-    [SerializeField] private Color targetColor = Color.yellow;
+    public Color baseColor = Color.red;
+    public Color targetColor = Color.yellow;
 
     public int mapWidth;
     public int mapHeight;
@@ -46,6 +46,44 @@ public class PerlinNoiseManager : MonoBehaviour
         OnPerlinNoiseModified?.Invoke();
     }
 
+    public Texture2D GenerateRoomTexture(int width, int height, Vector2 worldTopLeft, float pixelsPerUnit)
+    {
+        InitializePermutationTable();
+        Texture2D texture = new Texture2D(width, height);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                // Calcula la posición en el mundo para este pixel
+                float worldX = worldTopLeft.x + (x / pixelsPerUnit);
+                float worldY = worldTopLeft.y - (y / pixelsPerUnit);
+
+                float amplitude = 1f;
+                float frequency = 1f;
+                float noiseValue = 0f;
+
+                for (int o = 0; o < octaves; o++)
+                {
+                    float sampleX = (worldX + offset.x) * scale * frequency;
+                    float sampleY = (worldY + offset.y) * scale * frequency;
+
+                    float perlinValue = Perlin(sampleX, sampleY) * 2 - 1;
+                    noiseValue += perlinValue * amplitude;
+
+                    amplitude *= persistence;
+                    frequency *= lacunarity;
+                }
+
+                float normalizedNoise = (noiseValue + 1f) * 0.5f;
+                normalizedNoise = Mathf.Clamp01(normalizedNoise + brightness);
+                Color color = Color.Lerp(baseColor, targetColor, normalizedNoise);
+                texture.SetPixel(x, y, color);
+            }
+        }
+        texture.Apply();
+        return texture;
+    }
 
     public void GenerateGlobalGradientMap()
     {
@@ -78,7 +116,6 @@ public class PerlinNoiseManager : MonoBehaviour
             }
         }
         globalGradientMap.Apply();
-        OnPerlinNoiseModified?.Invoke();
     }
 
     public Texture2D GenerateRoomTextureFromGlobalMap(RectInt region)

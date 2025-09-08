@@ -9,7 +9,7 @@ public class ParametersPanel : MonoBehaviour
 {
     [SerializeField] private BinarySpacePartitioningSettings bspSettings;
     [SerializeField] private PerlinNoiseManager perlinNoiseManager;
-    [SerializeField] private B_L_System lSystem;
+    [SerializeField] private LSystemManager lSystem;
 
     [Header("BSP Elements")]
     [SerializeField] private Toggle bspViewPartitionsToggle;
@@ -41,6 +41,12 @@ public class ParametersPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI perlinNoiseBrightnessSliderText;
     [SerializeField] private TMP_InputField perlinNoiseOffsetX;
     [SerializeField] private TMP_InputField perlinNoiseOffsetY;
+    [SerializeField] private TMP_InputField perlinNoiseBaseColorR;
+    [SerializeField] private TMP_InputField perlinNoiseBaseColorG;
+    [SerializeField] private TMP_InputField perlinNoiseBaseColorB;
+    [SerializeField] private TMP_InputField perlinNoiseTargetColorR;
+    [SerializeField] private TMP_InputField perlinNoiseTargetColorG;
+    [SerializeField] private TMP_InputField perlinNoiseTargetColorB;
 
     [Header("L-System Elements")]
     [SerializeField] private Slider lSystemIterationsSlider;
@@ -91,6 +97,14 @@ public class ParametersPanel : MonoBehaviour
         Vector2 offset = perlinNoiseManager.offset;
         perlinNoiseOffsetX.text = offset.x.ToString();
         perlinNoiseOffsetY.text = offset.y.ToString();
+        Color baseColor = perlinNoiseManager.baseColor;
+        Color targetColor = perlinNoiseManager.targetColor;
+        perlinNoiseBaseColorR.text = ((int)(baseColor.r * 255)).ToString();
+        perlinNoiseBaseColorG.text = ((int)(baseColor.g * 255)).ToString();
+        perlinNoiseBaseColorB.text = ((int)(baseColor.b * 255)).ToString();
+        perlinNoiseTargetColorR.text = ((int)(targetColor.r * 255)).ToString();
+        perlinNoiseTargetColorG.text = ((int)(targetColor.g * 255)).ToString();
+        perlinNoiseTargetColorB.text = ((int)(targetColor.b * 255)).ToString();
     }
 
     public void OnInitializeLSystem()
@@ -214,6 +228,66 @@ public class ParametersPanel : MonoBehaviour
     {
         if (float.TryParse(value, out float y))
             perlinNoiseManager.offset.y = y;
+    }
+
+    public void OnPerlinNoiseBaseColorRChanged(string value)
+    {
+        if (int.TryParse(value, out int r))
+        {
+            Color color = perlinNoiseManager.baseColor;
+            color.r = Mathf.Clamp01(r / 255f);
+            perlinNoiseManager.baseColor = color;
+        }
+    }
+
+    public void OnPerlinNoiseBaseColorGChanged(string value)
+    {
+        if (int.TryParse(value, out int g))
+        {
+            Color color = perlinNoiseManager.baseColor;
+            color.g = Mathf.Clamp01(g / 255f);
+            perlinNoiseManager.baseColor = color;
+        }
+    }
+
+    public void OnPerlinNoiseBaseColorBChanged(string value)
+    {
+        if (int.TryParse(value, out int b))
+        {
+            Color color = perlinNoiseManager.baseColor;
+            color.b = Mathf.Clamp01(b / 255f);
+            perlinNoiseManager.baseColor = color;
+        }
+    }
+
+    public void OnPerlinNoiseTargetColorRChanged(string value)
+    {
+        if (int.TryParse(value, out int r))
+        {
+            Color color = perlinNoiseManager.targetColor;
+            color.r = Mathf.Clamp01(r / 255f);
+            perlinNoiseManager.targetColor = color;
+        }
+    }
+
+    public void OnPerlinNoiseTargetColorGChanged(string value)
+    {
+        if (int.TryParse(value, out int g))
+        {
+            Color color = perlinNoiseManager.targetColor;
+            color.g = Mathf.Clamp01(g / 255f);
+            perlinNoiseManager.targetColor = color;
+        }
+    }
+
+    public void OnPerlinNoiseTargetColorBChanged(string value)
+    {
+        if (int.TryParse(value, out int b))
+        {
+            Color color = perlinNoiseManager.targetColor;
+            color.b = Mathf.Clamp01(b / 255f);
+            perlinNoiseManager.targetColor = color;
+        }
     }
 
     public void OnLSystemIterationsSliderChanged()
