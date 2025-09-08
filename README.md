@@ -10,9 +10,9 @@ This project was developed by Tomás Concha and Joel Díaz, students of Video Ga
 
 To run the program, follow these instructions:
 
-1. Download the .zip folder with the project.
+1. Download the .rar folder with the project.
 2. Unzip the folder.
-3. Open the “Procedural-Content-Generation” file with Unity.
+3. Open the “Procedural-Content-Generation” file.
 
 Once the program is open and running, follow these instructions to use the tools:
 
