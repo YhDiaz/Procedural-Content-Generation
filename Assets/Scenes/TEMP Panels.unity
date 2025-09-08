@@ -457,7 +457,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.012334495, y: 0.6586142}
   m_AnchorMax: {x: 0.59900004, y: 0.7104036}
-  m_AnchoredPosition: {x: -3.0000305, y: 1.2599792}
+  m_AnchoredPosition: {x: -3.0000458, y: 1.2599792}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &34198990
@@ -1249,7 +1249,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.012334495, y: 0.55978936}
   m_AnchorMax: {x: 0.59900004, y: 0.6091929}
-  m_AnchoredPosition: {x: -3.0000305, y: 0.099998474}
+  m_AnchoredPosition: {x: -3.0000458, y: 0.099998474}
   m_SizeDelta: {x: 0, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &111297741
@@ -2638,7 +2638,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.012334495, y: 0.55978936}
   m_AnchorMax: {x: 0.59900004, y: 0.6091929}
-  m_AnchoredPosition: {x: -3.0000305, y: 0.099998474}
+  m_AnchoredPosition: {x: -3.0000458, y: 0.099998474}
   m_SizeDelta: {x: 0, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &268790199
@@ -5982,6 +5982,8 @@ MonoBehaviour:
   offset: {x: 0, y: 0}
   baseColor: {r: 1, g: 0, b: 0, a: 1}
   targetColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  mapWidth: 0
+  mapHeight: 0
   globalGradientMap: {fileID: 0}
 --- !u!4 &672311346
 Transform:
@@ -7073,7 +7075,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.012334495, y: 0.77000004}
   m_AnchorMax: {x: 0.59900004, y: 0.8171929}
-  m_AnchoredPosition: {x: -3.0000305, y: 0.8999939}
+  m_AnchoredPosition: {x: -3.0000458, y: 0.8999939}
   m_SizeDelta: {x: 0, y: 2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &801959037
@@ -7273,7 +7275,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.012334495, y: 0.4558071}
   m_AnchorMax: {x: 0.59900004, y: 0.50519294}
-  m_AnchoredPosition: {x: -3.0000305, y: -0.5999985}
+  m_AnchoredPosition: {x: -3.0000458, y: -0.5999985}
   m_SizeDelta: {x: 0, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &873470476
@@ -9108,7 +9110,7 @@ MonoBehaviour:
   axiom: F
   LHS: 4600
   RHS:
-  - ^F+[F]-[F]F
+  - F+[F]-[F]F
   linePrefab: {fileID: 1655489067337078071, guid: fa44f53f2bb09ff40b14d4b068df2534, type: 3}
   nonDrawers: 5800
 --- !u!4 &1038313358
@@ -12816,13 +12818,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 672311344}
-        m_TargetAssemblyTypeName: 
+      - m_Target: {fileID: 672311345}
+        m_TargetAssemblyTypeName: PerlinNoiseManager, Assembly-CSharp
         m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
